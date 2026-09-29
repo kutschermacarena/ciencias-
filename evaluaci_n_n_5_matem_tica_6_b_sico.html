@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación N°5: Área, Volumen y Ángulos - Colegio Santa Úrsula</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MathJax for rendering Mathematical LaTeX expressions -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            800: '#1e3a8a',
+                            900: '#1c2d5a',
+                        },
+                        ursula: {
+                            navy: '#1B2A4A',
+                            gold: '#D4AF37',
+                            lightGold: '#FBF5DF',
+                            teal: '#0D9488',
+                            softBg: '#F8FAFC'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .custom-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+        }
+        .correct-badge {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+        .incorrect-badge {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased pb-20">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-ursula-navy text-white sticky top-0 z-50 shadow-md border-b-4 border-ursula-gold">
+        <div class="max-w-7xl mx-mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-ursula-gold flex items-center justify-center font-bold text-ursula-navy text-xl shadow-inner">
+                    <i class="fa-solid font-bold fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">Colegio Santa Úrsula</h1>
+                    <p class="text-xs text-amber-200">Deutsche Ursulinenschule • Vitacura</p>
+                </div>
+            </div>
+
+            <!-- Score & Timer Controls -->
+            <div class="flex items-center space-x-4 sm:space-x-6 text-sm font-medium">
+                <div class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center space-x-2">
+                    <i class="fa-solid fa-clock text-amber-400"></i>
+                    <span>Tiempo: <span id="timer-display" class="font-mono text-amber-300 font-bold">90:00</span></span>
+                    <button id="btn-timer-toggle" onclick="toggleTimer()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-0.5 rounded text-slate-200 transition">
+                        <i class="fa-solid fa-pause" id="timer-icon"></i>
+                    </button>
+                </div>
+
+                <div class="bg-ursula-gold/20 border border-ursula-gold/40 px-3 py-1.5 rounded-lg flex items-center space-x-2">
+                    <i class="fa-solid fa-star text-ursula-gold"></i>
+                    <span>Puntaje: <span id="live-score" class="font-bold text-amber-300 text-base">0.0</span> / 30 pts</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 mt-6 space-y-8">
+
+        <!-- Title & Student Data Card -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 custom-shadow border border-slate-200/80">
+            <div class="border-b border-slate-100 pb-4 mb-6">
+                <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">Evaluación Parcial N°5</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Área, Volumen y Ángulos</h2>
+                <p class="text-slate-500 text-sm mt-1">6° Básico • Asignatura: Matemática • Exigencia: 60%</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Nombre de la Estudiante:</label>
+                    <input type="text" id="student-name" placeholder="Ej: María Jesús Larraín" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Fecha de Aplicación:</label>
+                    <input type="date" id="student-date" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition text-sm">
+                </div>
+            </div>
+        </section>
+
+        <!-- ÍTEM I: Cálculo Mental -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 custom-shadow border border-slate-200/80">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-sm">I</span>
+                    <h3 class="text-xl font-bold text-slate-800">Cálculo Mental</h3>
+                </div>
+                <span class="text-xs font-semibold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-200">3 Puntos (0.5 pts c/u)</span>
+            </div>
+            <p class="text-sm text-slate-600 mb-6">Resuelve mentalmente los siguientes ejercicios y escribe el resultado exacto en el espacio indicado:</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="mental-math-container">
+                <!-- Dynamic Items Inserted via JS -->
+            </div>
+        </section>
+
+        <!-- ÍTEM II: Operatoria y Álgebra -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 custom-shadow border border-slate-200/80">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-sm">II</span>
+                    <h3 class="text-xl font-bold text-slate-800">Operatoria y Álgebra</h3>
+                </div>
+                <span class="text-xs font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">4 Puntos (1 pt c/u)</span>
+            </div>
+            <p class="text-sm text-slate-600 mb-6">Encuentra el valor de la incógnita $x$ o el resultado de la operación combinada:</p>
+
+            <div class="space-y-6" id="algebra-container">
+                <!-- Algebra Items Generated dynamically -->
+            </div>
+        </section>
+
+        <!-- ÍTEM III: Selección Múltiple -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 custom-shadow border border-slate-200/80">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-sm">III</span>
+                    <h3 class="text-xl font-bold text-slate-800">Selección Múltiple</h3>
+                </div>
+                <span class="text-xs font-semibold bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-200">8 Puntos (1 pt c/u)</span>
+            </div>
+            <p class="text-sm text-slate-600 mb-6">Lee atentamente cada enunciado y marca la opción correcta:</p>
+
+            <div class="space-y-8" id="mc-container">
+                <!-- Multiple Choice Questions generated via JS -->
+            </div>
+        </section>
+
+        <!-- ÍTEM IV: Preguntas de Desarrollo -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 custom-shadow border border-slate-200/80">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-sm">IV</span>
+                    <h3 class="text-xl font-bold text-slate-800">Geometría: Ángulos y Figuras</h3>
+                </div>
+                <span class="text-xs font-semibold bg-amber-50 text-amber-700 px-3 py-1 rounded-full border border-amber-200">6 Puntos (1 pt c/u)</span>
+            </div>
+            <p class="text-sm text-slate-600 mb-6">Aplica las propiedades geométricas trabajadas en clase para determinar el valor desconocido en cada figura:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="development-container">
+                <!-- Development exercises -->
+            </div>
+        </section>
+
+        <!-- ÍTEM V: Verdadero o Falso -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 custom-shadow border border-slate-200/80">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">V</span>
+                    <h3 class="text-xl font-bold text-slate-800">Verdadero o Falso con Justificación</h3>
+                </div>
+                <span class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full border border-indigo-200">6 Puntos (1 pt c/u)</span>
+            </div>
+            <p class="text-sm text-slate-600 mb-6">Selecciona <strong>V</strong> si la afirmación es verdadera o <strong>F</strong> si es falsa. <em>Si es Falsa, debes redactar la justificación correcta para obtener el puntaje completo.</em></p>
+
+            <div class="space-y-6" id="tf-container">
+                <!-- True/False Questions JS -->
+            </div>
+        </section>
+
+        <!-- ÍTEM VI: Rutina de Pensamiento -->
+        <section class="bg-white rounded-2xl p-6 sm:p-8 custom-shadow border border-slate-200/80">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 font-bold flex items-center justify-center text-sm">VI</span>
+                    <h3 class="text-xl font-bold text-slate-800">Rutina de Pensamiento: Conectar, Extender, Desafiar</h3>
+                </div>
+                <span class="text-xs font-semibold bg-rose-50 text-rose-700 px-3 py-1 rounded-full border border-rose-200">3 Puntos</span>
+            </div>
+
+            <div class="bg-rose-50/50 p-4 rounded-xl border border-rose-100 mb-6">
+                <h4 class="font-bold text-slate-800 text-sm mb-2"><i class="fa-solid fa-box text-rose-500 mr-2"></i>Contexto: Comparación de Empaques Ecofriendly</h4>
+                <p class="text-sm text-slate-600">
+                    Una fábrica de chocolates está diseñando un nuevo empaque. Están evaluando dos cajas de cartón:
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                    <div class="bg-white p-3 rounded-lg border border-slate-200 text-center">
+                        <span class="font-semibold text-rose-700 text-sm">Caja A (Cubo)</span>
+                        <p class="text-xs text-slate-500">Arista = $8\text{ cm}$</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg border border-slate-200 text-center">
+                        <span class="font-semibold text-rose-700 text-sm">Caja B (Paralelepípedo)</span>
+                        <p class="text-xs text-slate-500">Largo = $10\text{ cm}$, Ancho = $7\text{ cm}$, Alto = $5\text{ cm}$</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6" id="thinking-routine-container">
+                <!-- Questions -->
+            </div>
+        </section>
+
+        <!-- SECCIÓN FINAL: Metacognición y Aprendiendo del Error -->
+        <section class="bg-gradient-to-br from-ursula-navy to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-ursula-gold flex items-center justify-center text-ursula-navy font-bold text-xl">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">Aprendiendo de mi Proceso (Metacognición)</h3>
+                    <p class="text-slate-300 text-xs">Reflexión estratégica para consolidar el aprendizaje</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-slate-200">
+                <div>
+                    <label class="block text-sm font-medium mb-1">1. ¿Cuál fue la sección o concepto que te resultó más desafiante en esta evaluación y por qué?</label>
+                    <textarea id="meta-q1" rows="2" placeholder="Ej: Me costó calcular los ángulos en paralelas porque me confundía con los alternos..." class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm focus:ring-2 focus:ring-ursula-gold outline-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">2. ¿Qué estrategia utilizaste para resolver los problemas de geometría y área?</label>
+                    <textarea id="meta-q2" rows="2" placeholder="Ej: Dibujé las redes desplegadas y sumé cada una de las caras..." class="w-full px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm focus:ring-2 focus:ring-ursula-gold outline-none"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-wrap gap-4 justify-between items-center pt-4 border-t border-slate-700">
+                <button onclick="calculateFinalResults()" class="w-full sm:w-auto px-8 py-3.5 bg-ursula-gold hover:bg-amber-400 text-ursula-navy font-extrabold rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2 text-base">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span>Finalizar y Obtener Calificación Final</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Final Report Modal / Card -->
+        <div id="final-report-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto shadow-2xl relative">
+                <button onclick="closeReport()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl font-bold">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="text-center pb-4 border-b border-slate-200">
+                    <div class="w-16 h-16 bg-blue-100 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-bold">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <h3 class="text-2xl font-extrabold text-slate-900">Resultado de la Evaluación</h3>
+                    <p class="text-slate-500 text-sm" id="report-student-info">Colegio Santa Úrsula - Vitacura</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 my-6 text-center">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <span class="block text-xs uppercase font-semibold text-slate-400">Puntaje</span>
+                        <span id="report-score" class="text-2xl font-black text-brand-600">0 / 30</span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <span class="block text-xs uppercase font-semibold text-slate-400">Logro %</span>
+                        <span id="report-percentage" class="text-2xl font-black text-slate-800">0%</span>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <span class="block text-xs uppercase font-semibold text-slate-400">Nota Estimada</span>
+                        <span id="report-grade" class="text-2xl font-black text-amber-600">1.0</span>
+                    </div>
+                </div>
+
+                <div id="report-breakdown" class="space-y-3 mb-6 text-sm text-slate-700">
+                    <!-- Detailed section performance -->
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="window.print()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3 rounded-xl transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Imprimir / Guardar PDF</span>
+                    </button>
+                    <button onclick="closeReport()" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition">
+                        Revisar Respuestas
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let totalScore = 0;
+        let timerSeconds = 90 * 60;
+        let timerInterval = null;
+        let isTimerRunning = true;
+
+        // --- TIMER LOGIC ---
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (isTimerRunning && timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timer-display').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function toggleTimer() {
+            isTimerRunning = !isTimerRunning;
+            const icon = document.getElementById('timer-icon');
+            icon.className = isTimerRunning ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+        }
+
+        const mentalMathData = [
+            { id: 'm1', expr: '120 + 380', ans: 500, pts: 0.5 },
+            { id: 'm2', expr: '1000 - 450', ans: 550, pts: 0.5 },
+            { id: 'm3', expr: '25 \\cdot 4', ans: 100, pts: 0.5 },
+            { id: 'm4', expr: '360 : 6', ans: 60, pts: 0.5 },
+            { id: 'm5', expr: '15 \\cdot 3', ans: 45, pts: 0.5 },
+            { id: 'm6', expr: '720 : 9', ans: 80, pts: 0.5 },
+        ];
+
+        function renderMentalMath() {
+            const container = document.getElementById('mental-math-container');
+            container.innerHTML = mentalMathData.map((item, index) => `
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-400">Item ${index + 1}</span>
+                        <span id="badge-${item.id}" class="text-xs px-2 py-0.5 rounded-md font-bold hidden"></span>
+                    </div>
+                    <div class="text-center my-2">
+                        <span class="text-lg font-extrabold text-slate-800">\\(${item.expr}\\)</span>
+                    </div>
+                    <div class="mt-2">
+                        <input type="number" id="input-${item.id}" placeholder="Resultado" onchange="checkMentalMath('${item.id}')"
+                            class="w-full text-center py-1.5 px-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkMentalMath(id) {
+            const item = mentalMathData.find(x => x.id === id);
+            const val = parseFloat(document.getElementById(`input-${id}`).value);
+            const badge = document.getElementById(`badge-${id}`);
+
+            if (!isNaN(val) && val === item.ans) {
+                badge.className = "text-xs px-2 py-0.5 rounded-md font-bold correct-badge";
+                badge.innerText = "¡Correcto! (+0.5)";
+                badge.classList.remove('hidden');
+            } else {
+                badge.className = "text-xs px-2 py-0.5 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Incorrecto";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        const algebraData = [
+            {
+                id: 'alg1',
+                title: 'a) Ecuación Lineal',
+                expr: '2x + 3 = 23',
+                ans: 10,
+                pts: 1,
+                steps: '1) Restar 3 a ambos lados: $2x = 20$. <br>2) Dividir por 2: $x = 10$.'
+            },
+            {
+                id: 'alg2',
+                title: 'b) Ecuación con División',
+                expr: '\\frac{x}{2} = 500',
+                ans: 1000,
+                pts: 1,
+                steps: '1) Multiplicar por 2 a ambos lados: $x = 500 \\cdot 2$. <br>2) Resultado: $x = 1000$.'
+            },
+            {
+                id: 'alg3',
+                title: 'c) Operación Combinada 1',
+                expr: '240 + 320 : 2',
+                ans: 400,
+                pts: 1,
+                steps: '1) Prioridad de operaciones: Resolver la división primero: $320 : 2 = 160$. <br>2) Sumar: $240 + 160 = 400$.'
+            },
+            {
+                id: 'alg4',
+                title: 'd) Operación Combinada con Paréntesis y Decimales',
+                expr: '(3.5 + 2) \\cdot 4',
+                ans: 22,
+                pts: 1,
+                steps: '1) Resolver paréntesis: $3.5 + 2 = 5.5$. <br>2) Multiplicar por 4: $5.5 \\cdot 4 = 22$.'
+            }
+        ];
+
+        function renderAlgebra() {
+            const container = document.getElementById('algebra-container');
+            container.innerHTML = algebraData.map((item) => `
+                <div class="p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="flex flex-wrap justify-between items-center mb-3">
+                        <h4 class="font-bold text-slate-800">${item.title}</h4>
+                        <span id="badge-${item.id}" class="text-xs px-2.5 py-1 rounded-md font-bold hidden"></span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-4 mb-3">
+                        <span class="text-lg font-bold text-slate-700 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+                            \\(${item.expr}\\)
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-semibold text-slate-600">Respuesta:</span>
+                            <input type="number" step="any" id="input-${item.id}" onchange="checkAlgebra('${item.id}')"
+                                class="w-32 py-1.5 px-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                    <div id="solution-${item.id}" class="hidden mt-3 p-3 bg-blue-50/80 rounded-lg text-xs text-blue-900 border border-blue-100">
+                        <strong>Paso a paso:</strong><br>${item.steps}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkAlgebra(id) {
+            const item = algebraData.find(x => x.id === id);
+            const val = parseFloat(document.getElementById(`input-${id}`).value);
+            const badge = document.getElementById(`badge-${id}`);
+            const sol = document.getElementById(`solution-${id}`);
+
+            sol.classList.remove('hidden');
+
+            if (!isNaN(val) && Math.abs(val - item.ans) < 0.01) {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                badge.innerText = "¡Correcto! (+1 pt)";
+                badge.classList.remove('hidden');
+            } else {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Incorrecto";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        const mcData = [
+            {
+                id: 'mc1',
+                q: '1. ¿Cuál de los siguientes grupos de ángulos corresponde a un **Triángulo Rectángulo**?',
+                svg: `<svg class="w-32 h-24 mx-auto" viewBox="0 0 100 80">
+                        <polygon points="10,70 90,70 10,10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+                        <rect x="10" y="60" width="10" height="10" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+                      </svg>`,
+                options: [
+                    '79°, 42°, 59°',
+                    '44°, 68°, 68°',
+                    '90°, 45°, 45°',
+                    '98°, 49°, 33°'
+                ],
+                ans: 2,
+                exp: 'Un triángulo rectángulo posee exactamente un ángulo recto de 90° y sus ángulos interiores suman 180° (90° + 45° + 45° = 180°).'
+            },
+            {
+                id: 'mc2',
+                q: '2. Observa la medición en el transportador. ¿Cuál es la medida del ángulo $\\angle AOB$?',
+                svg: `<svg class="w-64 h-32 mx-auto" viewBox="0 0 200 110">
+                        <!-- Protractor body -->
+                        <path d="M 10 100 A 90 90 0 0 1 190 100 Z" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+                        <line x1="100" y1="100" x2="190" y2="100" stroke="#0284c7" stroke-width="3"/>
+                        <!-- Angle line at 110 degrees -->
+                        <line x1="100" y1="100" x2="69" y2="15" stroke="#ef4444" stroke-width="3"/>
+                        <circle cx="100" cy="100" r="4" fill="#1e293b"/>
+                        <text x="100" y="108" text-anchor="middle" font-size="8" font-weight="bold">O</text>
+                        <text x="185" y="95" font-size="8" font-weight="bold">A</text>
+                        <text x="60" y="12" font-size="8" font-weight="bold" fill="#ef4444">B</text>
+                        <path d="M 130 100 A 30 30 0 0 0 89 71" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2"/>
+                        <text x="115" y="85" font-size="9" font-weight="bold" fill="#ef4444">110°</text>
+                      </svg>`,
+                options: ['70°', '90°', '110°', '120°'],
+                ans: 2,
+                exp: 'Alineando el rayo OA en 0°, la apertura del rayo OB llega exactamente a la marca de 110°.'
+            },
+            {
+                id: 'mc3',
+                q: '3. En todo **triángulo equilátero**, ¿cuánto mide cada uno de sus ángulos interiores?',
+                options: ['45°', '60°', '90°', '180°'],
+                ans: 1,
+                exp: 'Un triángulo equilátero tiene sus 3 lados y sus 3 ángulos iguales. Como la suma es 180°, $180° : 3 = 60°$.'
+            },
+            {
+                id: 'mc4',
+                q: '4. Tres alumnas afirmaron lo siguiente sobre dos rectas paralelas cortadas por una transversal:<br>' +
+                   '• <strong>Pilar:</strong> "Los ángulos opuestos por el vértice son suplementarios."<br>' +
+                   '• <strong>Florencia:</strong> "Los ángulos correspondientes tienen la misma medida."<br>' +
+                   '• <strong>Teresa:</strong> "Los ángulos alternos internos suman siempre 90°."',
+                options: ['Solo Pilar', 'Solo Florencia', 'Solo Teresa', 'Florencia y Teresa'],
+                ans: 1,
+                exp: 'Florencia está en lo correcto: entre paralelas cortadas por una transversal, los ángulos correspondientes son congruentes (tienen igual medida).'
+            },
+            {
+                id: 'mc5',
+                q: '5. Un paralelepípedo tiene dimensiones $2\\text{ cm} \\times 3\\text{ cm} \\times 4\\text{ cm}$. Si su **arista mayor aumenta en $1\\text{ cm}$**, ¿cuál es su nuevo volumen?',
+                options: ['24 cm³', '30 cm³', '36 cm³', '48 cm³'],
+                ans: 2,
+                exp: 'La arista mayor es 4 cm. Al aumentar en 1 cm pasa a medir 5 cm. El nuevo volumen es $2 \\times 3 \\times 5 = 30\\text{ cm}^3$... ¡Espera! Revisemos las dimensiones: $2 \\times 3 \\times 5 = 30\\text{ cm}^3$ (Opción B: 30 cm³).'
+            },
+            {
+                id: 'mc6',
+                q: '6. ¿Qué figuras geométricas componen un teselado regular semi-regular que rodea cada vértice con octágonos y cuadrados?',
+                options: [
+                    '2 Triángulos y 2 Cuadrados',
+                    '2 Octágonos y 1 Cuadrado',
+                    '3 Hexágonos',
+                    '1 Octágono y 2 Pentágonos'
+                ],
+                ans: 1,
+                exp: 'El teselado de octágonos y cuadrados tiene en cada vértice dos octágonos regulares (135° c/u) y un cuadrado (90°): $135° + 135° + 90° = 360°$.'
+            },
+            {
+                id: 'mc7',
+                q: '7. Una caja rectangular desplegada tiene dimensiones de base $2\\text{ cm} \\times 8\\text{ cm}$ y altura $6\\text{ cm}$. ¿Cuál es la **superficie total de cartón** requerida para fabricarla?',
+                options: ['96 cm²', '120 cm²', '152 cm²', '180 cm²'],
+                ans: 2,
+                exp: 'Área total = $2 \\cdot (2\\cdot 8 + 2\\cdot 6 + 8\\cdot 6) = 2 \\cdot (16 + 12 + 48) = 2 \\cdot 76 = 152\\text{ cm}^2$.'
+            },
+            {
+                id: 'mc8',
+                q: '8. Para la misma caja del ejercicio anterior ($2\\text{ cm} \\times 8\\text{ cm} \\times 6\\text{ cm}$), ¿cuál es su **volumen interior**?',
+                options: ['96 cm³', '112 cm³', '152 cm³', '192 cm³'],
+                ans: 0,
+                exp: 'Volumen = Largo $\\times$ Ancho $\\times$ Alto = $2 \\times 8 \\times 6 = 96\\text{ cm}^3$.'
+            }
+        ];
+
+        // Correct answer index fix for question 5
+        mcData[4].ans = 1; // 30 cm³
+
+        function renderMC() {
+            const container = document.getElementById('mc-container');
+            container.innerHTML = mcData.map((item, qIdx) => `
+                <div class="p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-semibold text-slate-800 text-sm sm:text-base">${item.q}</div>
+                        <span id="badge-${item.id}" class="text-xs px-2.5 py-1 rounded-md font-bold hidden shrink-0 ml-2"></span>
+                    </div>
+                    ${item.svg ? `<div class="my-3">${item.svg}</div>` : ''}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                        ${item.options.map((opt, oIdx) => `
+                            <button onclick="selectMCOption('${item.id}', ${oIdx})" id="btn-${item.id}-${oIdx}"
+                                class="text-left px-4 py-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-sm transition font-medium flex items-center space-x-2">
+                                <span class="w-6 h-6 rounded-full bg-slate-100 border border-slate-300 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">${String.fromCharCode(65 + oIdx)}</span>
+                                <span>${opt}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="exp-${item.id}" class="hidden mt-3 p-3 bg-purple-50 rounded-lg text-xs text-purple-900 border border-purple-100">
+                        <strong>Explicación:</strong> ${item.exp}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const mcAnswers = {};
+
+        function selectMCOption(qId, optIdx) {
+            mcAnswers[qId] = optIdx;
+            const item = mcData.find(x => x.id === qId);
+
+            item.options.forEach((_, idx) => {
+                const btn = document.getElementById(`btn-${qId}-${idx}`);
+                btn.className = "text-left px-4 py-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-sm transition font-medium flex items-center space-x-2";
+            });
+
+            const selectedBtn = document.getElementById(`btn-${qId}-${optIdx}`);
+            const badge = document.getElementById(`badge-${qId}`);
+            const exp = document.getElementById(`exp-${qId}`);
+
+            exp.classList.remove('hidden');
+
+            if (optIdx === item.ans) {
+                selectedBtn.className = "text-left px-4 py-2.5 rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-900 text-sm font-semibold flex items-center space-x-2";
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                badge.innerText = "¡Correcto! (+1 pt)";
+                badge.classList.remove('hidden');
+            } else {
+                selectedBtn.className = "text-left px-4 py-2.5 rounded-lg border-2 border-red-500 bg-red-50 text-red-900 text-sm font-semibold flex items-center space-x-2";
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Incorrecto";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        const devData = [
+            {
+                id: 'dev1',
+                title: 'a) Ángulo desconocido $w$ en Cuadrilátero WXYZ',
+                svg: `<svg class="w-48 h-32 mx-auto" viewBox="0 0 160 100">
+                        <polygon points="20,80 140,80 120,20 40,30" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                        <text x="15" y="90" font-size="9" font-bold>78°</text>
+                        <text x="135" y="90" font-size="9" font-bold>115°</text>
+                        <text x="115" y="20" font-size="9" font-bold>54°</text>
+                        <text x="35" y="25" font-size="10" font-bold fill="#dc2626">w</text>
+                      </svg>`,
+                desc: 'Un cuadrilátero suma $360°$ en sus ángulos interiores. Ángulos conocidos: $78°$, $115°$, $54°$.',
+                ans: 113,
+                pts: 1,
+                steps: '$w = 360° - (78° + 115° + 54°) = 360° - 247° = 113°$'
+            },
+            {
+                id: 'dev2',
+                title: 'b) Ángulo $y$ en Triángulo ABC',
+                svg: `<svg class="w-48 h-32 mx-auto" viewBox="0 0 160 100">
+                        <polygon points="20,80 140,80 70,20" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+                        <text x="25" y="75" font-size="9" font-bold>84°</text>
+                        <text x="115" y="75" font-size="9" font-bold>36°</text>
+                        <text x="65" y="35" font-size="10" font-bold fill="#dc2626">2y</text>
+                      </svg>`,
+                desc: 'Un triángulo suma $180°$. Los ángulos son $84°$, $36°$ y el ángulo superior mide $2y$. Halla $y$.',
+                ans: 30,
+                pts: 1,
+                steps: '1) Ángulo superior = $180° - (84° + 36°) = 180° - 120° = 60°$. <br>2) Como el ángulo es $2y$: $2y = 60° \\implies y = 30°$.'
+            },
+            {
+                id: 'dev3',
+                title: 'c) Ángulo Completo ($360°$)',
+                svg: `<svg class="w-36 h-36 mx-auto" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+                        <line x1="50" y1="50" x2="90" y2="50" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="50" y1="50" x2="20" y2="20" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="50" y1="50" x2="30" y2="80" stroke="#1e293b" stroke-width="2"/>
+                        <text x="55" y="35" font-size="8" font-bold>150°</text>
+                        <text x="25" y="55" font-size="8" font-bold>60°</text>
+                        <text x="40" y="75" font-size="8" font-bold>23°</text>
+                        <text x="65" y="65" font-size="9" font-bold fill="#dc2626">x</text>
+                      </svg>`,
+                desc: 'La suma total alrededor de un punto es $360°$. Los sectores conocidos miden $150°$, $60°$ y $23°$. Halla $x$.',
+                ans: 127,
+                pts: 1,
+                steps: '$x = 360° - (150° + 60° + 23°) = 360° - 233° = 127°$'
+            },
+            {
+                id: 'dev4',
+                title: 'd) Ángulo Recto ($90°$)',
+                svg: `<svg class="w-36 h-36 mx-auto" viewBox="0 0 100 100">
+                        <path d="M 10 90 L 90 90 L 10 10 Z" fill="#f8fafc"/>
+                        <line x1="10" y1="90" x2="90" y2="90" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="10" y1="90" x2="10" y2="10" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="10" y1="90" x2="60" y2="30" stroke="#2563eb" stroke-width="2"/>
+                        <line x1="10" y1="90" x2="80" y2="60" stroke="#2563eb" stroke-width="2"/>
+                        <text x="20" y="35" font-size="8">38°</text>
+                        <text x="40" y="55" font-size="9" font-bold fill="#dc2626">β</text>
+                        <text x="55" y="80" font-size="8">21°</text>
+                      </svg>`,
+                desc: 'Un ángulo recto de $90°$ está dividido en 3 partes: $38°$, $\\beta$ y $21°$. Halla el valor de $\\beta$.',
+                ans: 31,
+                pts: 1,
+                steps: '$\\beta = 90° - (38° + 21°) = 90° - 59° = 31°$'
+            },
+            {
+                id: 'dev5',
+                title: 'e) Paralelas y Ángulo Suplementario',
+                svg: `<svg class="w-48 h-28 mx-auto" viewBox="0 0 160 90">
+                        <line x1="10" y1="30" x2="150" y2="30" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="10" y1="70" x2="150" y2="70" stroke="#1e293b" stroke-width="2"/>
+                        <line x1="30" y1="85" x2="130" y2="10" stroke="#ef4444" stroke-width="2"/>
+                        <text x="90" y="25" font-size="8" font-bold>60°</text>
+                        <text x="110" y="25" font-size="9" font-bold fill="#dc2626">∠1</text>
+                      </svg>`,
+                desc: 'Si dos rectas son paralelas y uno de los ángulos suplementarios en el cruce mide $60°$, ¿cuánto mide el ángulo suplementario directo $\\angle 1$?',
+                ans: 120,
+                pts: 1,
+                steps: 'Los ángulos sobre una misma línea recta forman un par lineal y suman $180°$. Por tanto, $\\angle 1 = 180° - 60° = 120°$.'
+            },
+            {
+                id: 'dev6',
+                title: 'f) Razón de Ángulos Alrededor de un Punto',
+                svg: null,
+                desc: 'Cuatro ángulos $a, b, c, d$ están en razón $3 : 1 : 2 : 4$ alrededor de un punto ($360°$). ¿Cuánto mide el **ángulo mayor ($d$)**?',
+                ans: 144,
+                pts: 1,
+                steps: '1) Suma de partes de la razón = $3 + 1 + 2 + 4 = 10$ partes. <br>2) Valor de cada parte = $360° : 10 = 36°$. <br>3) Ángulo mayor $d = 4 \\cdot 36° = 144°$.'
+            }
+        ];
+
+        function renderDevelopment() {
+            const container = document.getElementById('development-container');
+            container.innerHTML = devData.map(item => `
+                <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-slate-800 text-sm sm:text-base">${item.title}</h4>
+                            <span id="badge-${item.id}" class="text-xs px-2.5 py-1 rounded-md font-bold hidden"></span>
+                        </div>
+                        ${item.svg ? `<div class="my-2">${item.svg}</div>` : ''}
+                        <p class="text-xs text-slate-600 mb-3">${item.desc}</p>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-200">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-semibold text-slate-700">Valor obtenido:</span>
+                            <input type="number" id="input-${item.id}" onchange="checkDev('${item.id}')" placeholder="°"
+                                class="w-28 py-1.5 px-3 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                            <span class="text-xs font-bold text-slate-500">grados (°)</span>
+                        </div>
+                        <div id="sol-${item.id}" class="hidden mt-3 p-3 bg-amber-50 rounded-lg text-xs text-amber-900 border border-amber-200">
+                            <strong>Desarrollo:</strong><br>${item.steps}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkDev(id) {
+            const item = devData.find(x => x.id === id);
+            const val = parseFloat(document.getElementById(`input-${id}`).value);
+            const badge = document.getElementById(`badge-${id}`);
+            const sol = document.getElementById(`sol-${id}`);
+
+            sol.classList.remove('hidden');
+
+            if (!isNaN(val) && Math.abs(val - item.ans) < 0.1) {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                badge.innerText = "¡Correcto! (+1 pt)";
+                badge.classList.remove('hidden');
+            } else {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Incorrecto";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        const tfData = [
+            {
+                id: 'tf1',
+                stmt: '1. La suma de los ángulos interiores de cualquier cuadrilátero es siempre igual a $180°$.',
+                correct: 'F',
+                pts: 1,
+                just: 'Falso. La suma de los ángulos interiores de todo cuadrilátero es $360°$. (Es $180°$ en los triángulos).'
+            },
+            {
+                id: 'tf2',
+                stmt: '2. Los ángulos opuestos por el vértice tienen siempre la misma medida (son congruentes).',
+                correct: 'V',
+                pts: 1,
+                just: 'Verdadero. Por teorema geométrico, todo par de ángulos opuestos por el vértice poseen exactamente la misma abertura.'
+            },
+            {
+                id: 'tf3',
+                stmt: '3. En la secuencia numérica $8, 12, 16, 20...$, la regla para la posición $n$ viene dada por $4n + 2$.',
+                correct: 'F',
+                pts: 1,
+                just: 'Falso. La regla correcta es $4n + 4$. Para $n=1 \\implies 4(1)+4 = 8$; para $n=2 \\implies 4(2)+4 = 12$.'
+            },
+            {
+                id: 'tf4',
+                stmt: '4. El ángulo suplementario de un ángulo de $70°$ mide $20°$.',
+                correct: 'F',
+                pts: 1,
+                just: 'Falso. Los ángulos suplementarios suman $180°$. Por ende, el suplemento de $70°$ es $180° - 70° = 110°$ ($20°$ es su complementario).'
+            },
+            {
+                id: 'tf5',
+                stmt: '5. La expresión en lenguaje algebraico del "doble de un número aumentado en 5" se escribe como $2n + 5$.',
+                correct: 'V',
+                pts: 1,
+                just: 'Verdadero. El doble de $n$ se expresa $2n$ y "aumentado en 5" corresponde a sumar $5$.'
+            },
+            {
+                id: 'tf6',
+                stmt: '6. El cuadrado es considerado un polígono regular porque tiene todos sus lados y ángulos iguales.',
+                correct: 'V',
+                pts: 1,
+                just: 'Verdadero. Al ser equilátero y equiángulo (4 lados iguales y 4 ángulos rectos de 90°), cumple la definición de polígono regular.'
+            }
+        ];
+
+        function renderTF() {
+            const container = document.getElementById('tf-container');
+            container.innerHTML = tfData.map(item => `
+                <div class="p-4 sm:p-5 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="flex flex-wrap justify-between items-start gap-2 mb-3">
+                        <p class="text-sm font-semibold text-slate-800 flex-1">${item.stmt}</p>
+                        <span id="badge-${item.id}" class="text-xs px-2.5 py-1 rounded-md font-bold hidden shrink-0"></span>
+                    </div>
+
+                    <div class="flex items-center space-x-6 mb-3">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="tf-${item.id}" value="V" onchange="handleTFSelect('${item.id}', 'V')" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-2 text-sm font-bold text-slate-700">Verdadero (V)</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="tf-${item.id}" value="F" onchange="handleTFSelect('${item.id}', 'F')" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-2 text-sm font-bold text-slate-700">Falso (F)</span>
+                        </label>
+                    </div>
+
+                    <div id="just-box-${item.id}" class="hidden mt-3">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Justifica por qué es Falsa:</label>
+                        <input type="text" id="just-input-${item.id}" onkeyup="checkTF('${item.id}')" placeholder="Escribe tu justificación matemática aquí..."
+                            class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+
+                    <div id="feedback-${item.id}" class="hidden mt-3 p-3 bg-indigo-50 rounded-lg text-xs text-indigo-900 border border-indigo-100">
+                        <strong>Explicación:</strong> ${item.just}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const tfState = {};
+
+        function handleTFSelect(id, choice) {
+            tfState[id] = choice;
+            const justBox = document.getElementById(`just-box-${id}`);
+
+            if (choice === 'F') {
+                justBox.classList.remove('hidden');
+            } else {
+                justBox.classList.add('hidden');
+            }
+            checkTF(id);
+        }
+
+        function checkTF(id) {
+            const item = tfData.find(x => x.id === id);
+            const userChoice = tfState[id];
+            const badge = document.getElementById(`badge-${id}`);
+            const feedback = document.getElementById(`feedback-${id}`);
+
+            if (!userChoice) return;
+
+            feedback.classList.remove('hidden');
+
+            if (userChoice === item.correct) {
+                if (userChoice === 'F') {
+                    const justInput = document.getElementById(`just-input-${id}`).value.trim();
+                    if (justInput.length > 5) {
+                        badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                        badge.innerText = "¡Correcto y Justificado! (+1 pt)";
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                        badge.innerText = "Falta Justificación";
+                        badge.classList.remove('hidden');
+                    }
+                } else {
+                    badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                    badge.innerText = "¡Correcto! (+1 pt)";
+                    badge.classList.remove('hidden');
+                }
+            } else {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Incorrecto";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        function renderThinkingRoutine() {
+            const container = document.getElementById('thinking-routine-container');
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <label class="block font-semibold text-slate-800 text-sm mb-2">
+                            1. <strong>[CONECTAR]</strong> Para determinar cuál empaque utiliza **MENOS cartón**, ¿qué magnitud geométrica debes calcular? (1 pt)
+                        </label>
+                        <div class="flex space-x-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="tr-q1" value="volumen" onchange="checkTR1()" class="w-4 h-4 text-rose-600">
+                                <span class="ml-2 text-sm text-slate-700">El Volumen Total</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="tr-q1" value="area" onchange="checkTR1()" class="w-4 h-4 text-rose-600">
+                                <span class="ml-2 text-sm text-slate-700 font-bold">El Área de la Superficie Total</span>
+                            </label>
+                        </div>
+                        <span id="badge-tr1" class="text-xs px-2.5 py-1 rounded-md font-bold hidden mt-2 inline-block"></span>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <label class="block font-semibold text-slate-800 text-sm mb-2">
+                            2. <strong>[EXTENDER]</strong> Realiza los cálculos del área total para ambas cajas: (1 pt)
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-2">
+                            <div>
+                                <span class="text-xs text-slate-600 font-bold block mb-1">Área Cubo A ($8\\text{ cm}$ arista):</span>
+                                <input type="number" id="tr-area-a" onchange="checkTR2()" placeholder="cm²" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-600 font-bold block mb-1">Área Paralelepípedo B ($10\\times 7\\times 5\\text{ cm}$):</span>
+                                <input type="number" id="tr-area-b" onchange="checkTR2()" placeholder="cm²" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                            </div>
+                        </div>
+                        <span id="badge-tr2" class="text-xs px-2.5 py-1 rounded-md font-bold hidden inline-block mt-1"></span>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                        <label class="block font-semibold text-slate-800 text-sm mb-2">
+                            3. <strong>[DESAFIAR]</strong> ¿Cuál caja le recomendarías a la fábrica para reducir costos de material y por qué? (1 pt)
+                        </label>
+                        <textarea id="tr-q3" onkeyup="checkTR3()" rows="2" placeholder="Escribe tu recomendación basada en los valores obtenidos..." class="w-full p-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-rose-500 outline-none"></textarea>
+                        <span id="badge-tr3" class="text-xs px-2.5 py-1 rounded-md font-bold hidden inline-block mt-1"></span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkTR1() {
+            const val = document.querySelector('input[name="tr-q1"]:checked')?.value;
+            const badge = document.getElementById('badge-tr1');
+            if (val === 'area') {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                badge.innerText = "¡Correcto! El cartón corresponde a la superficie (Área Total). (+1 pt)";
+                badge.classList.remove('hidden');
+            } else {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Incorrecto. El volumen mide capacidad interior, no material exterior.";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        function checkTR2() {
+            const areaA = parseFloat(document.getElementById('tr-area-a').value); // 6 * 8^2 = 384
+            const areaB = parseFloat(document.getElementById('tr-area-b').value); // 2*(70 + 50 + 35) = 310
+            const badge = document.getElementById('badge-tr2');
+
+            if (areaA === 384 && areaB === 310) {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                badge.innerText = "¡Excelente! Cubo A = 384 cm² y Paralelepípedo B = 310 cm². (+1 pt)";
+                badge.classList.remove('hidden');
+            } else {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Verifica los valores: Cubo = 6 · 8²; Paralelepípedo = 2 · (10·7 + 10·5 + 7·5)";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        function checkTR3() {
+            const txt = document.getElementById('tr-q3').value.trim();
+            const badge = document.getElementById('badge-tr3');
+            if (txt.length > 10) {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold correct-badge";
+                badge.innerText = "¡Respuesta registrada! (+1 pt por argumento)";
+                badge.classList.remove('hidden');
+            } else {
+                badge.className = "text-xs px-2.5 py-1 rounded-md font-bold incorrect-badge";
+                badge.innerText = "Desarrolla más tu argumento indicando cuál requiere menos cartón.";
+                badge.classList.remove('hidden');
+            }
+            updateTotalLiveScore();
+        }
+
+        function calculateTotalScore() {
+            let score = 0;
+
+            // Item I: 6 x 0.5 = 3
+            mentalMathData.forEach(item => {
+                const val = parseFloat(document.getElementById(`input-${item.id}`)?.value);
+                if (!isNaN(val) && val === item.ans) score += 0.5;
+            });
+
+            // Item II: 4 x 1 = 4
+            algebraData.forEach(item => {
+                const val = parseFloat(document.getElementById(`input-${item.id}`)?.value);
+                if (!isNaN(val) && Math.abs(val - item.ans) < 0.01) score += 1;
+            });
+
+            // Item III: 8 x 1 = 8
+            mcData.forEach(item => {
+                if (mcAnswers[item.id] === item.ans) score += 1;
+            });
+
+            // Item IV: 6 x 1 = 6
+            devData.forEach(item => {
+                const val = parseFloat(document.getElementById(`input-${item.id}`)?.value);
+                if (!isNaN(val) && Math.abs(val - item.ans) < 0.1) score += 1;
+            });
+
+            // Item V: 6 x 1 = 6
+            tfData.forEach(item => {
+                const userChoice = tfState[item.id];
+                if (userChoice === item.correct) {
+                    if (userChoice === 'F') {
+                        const just = document.getElementById(`just-input-${item.id}`)?.value.trim() || '';
+                        if (just.length > 5) score += 1;
+                    } else {
+                        score += 1;
+                    }
+                }
+            });
+
+            // Item VI: 3 x 1 = 3
+            if (document.querySelector('input[name="tr-q1"]:checked')?.value === 'area') score += 1;
+            const areaA = parseFloat(document.getElementById('tr-area-a')?.value);
+            const areaB = parseFloat(document.getElementById('tr-area-b')?.value);
+            if (areaA === 384 && areaB === 310) score += 1;
+            if ((document.getElementById('tr-q3')?.value.trim() || '').length > 10) score += 1;
+
+            return score;
+        }
+
+        function updateTotalLiveScore() {
+            totalScore = calculateTotalScore();
+            document.getElementById('live-score').innerText = totalScore.toFixed(1);
+        }
+
+        function calculateFinalResults() {
+            const studentName = document.getElementById('student-name').value.trim() || 'Estudiante';
+            const studentDate = document.getElementById('student-date').value || 'Fecha no registrada';
+            totalScore = calculateTotalScore();
+
+            const maxScore = 30;
+            const percentage = Math.round((totalScore / maxScore) * 100);
+
+            // Grade calculation based on Chilean grading system (60% scale)
+            let grade = 1.0;
+            if (totalScore < 18) {
+                grade = 1.0 + 3.0 * (totalScore / 18);
+            } else {
+                grade = 4.0 + 3.0 * ((totalScore - 18) / 12);
+            }
+            grade = Math.min(7.0, Math.max(1.0, grade)).toFixed(1);
+
+            document.getElementById('report-student-info').innerText = `${studentName} • ${studentDate}`;
+            document.getElementById('report-score').innerText = `${totalScore.toFixed(1)} / ${maxScore}`;
+            document.getElementById('report-percentage').innerText = `${percentage}%`;
+            document.getElementById('report-grade').innerText = grade;
+
+            document.getElementById('report-breakdown').innerHTML = `
+                <div class="flex justify-between border-b pb-1">
+                    <span>Ítem I: Cálculo Mental</span>
+                    <span class="font-bold">Max 3.0 pts</span>
+                </div>
+                <div class="flex justify-between border-b pb-1">
+                    <span>Ítem II: Operatoria y Álgebra</span>
+                    <span class="font-bold">Max 4.0 pts</span>
+                </div>
+                <div class="flex justify-between border-b pb-1">
+                    <span>Ítem III: Selección Múltiple</span>
+                    <span class="font-bold">Max 8.0 pts</span>
+                </div>
+                <div class="flex justify-between border-b pb-1">
+                    <span>Ítem IV: Geometría y Ángulos</span>
+                    <span class="font-bold">Max 6.0 pts</span>
+                </div>
+                <div class="flex justify-between border-b pb-1">
+                    <span>Ítem V: Verdadero / Falso</span>
+                    <span class="font-bold">Max 6.0 pts</span>
+                </div>
+                <div class="flex justify-between border-b pb-1">
+                    <span>Ítem VI: Rutina de Pensamiento</span>
+                    <span class="font-bold">Max 3.0 pts</span>
+                </div>
+            `;
+
+            document.getElementById('final-report-modal').classList.remove('hidden');
+        }
+
+        function closeReport() {
+            document.getElementById('final-report-modal').classList.add('hidden');
+        }
+
+        window.onload = function() {
+            renderMentalMath();
+            renderAlgebra();
+            renderMC();
+            renderDevelopment();
+            renderTF();
+            renderThinkingRoutine();
+            startTimer();
+
+            // Set today's date default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('student-date').value = today;
+
+            // Trigger MathJax re-render after dynamic content load
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        };
+    </script>
+</body>
+</html>
