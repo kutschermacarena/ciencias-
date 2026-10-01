@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciReplicate Pro - Analizador de Papers & Protocolos de Replicación</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        slate: {
+                            850: '#151e2e',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-track { background: #0f172a; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 dark:text-slate-100 dark:bg-slate-900 transition-colors duration-200 flex flex-col">
+
+    <!-- Navigation Bar -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40 no-print border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-brand-600 p-2 rounded-xl text-white shadow-lg shadow-brand-600/30">
+                        <i class="fa-solid fa-flask-vial text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg sm:text-xl tracking-tight text-white flex items-center gap-2">
+                            SciReplicate <span class="text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30 px-2 py-0.5 rounded-full">v3.0</span>
+                        </span>
+                        <p class="text-[11px] text-slate-400 hidden sm:block">Plataforma de Estandarización & Replicación Científica</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-btn bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('library')" id="tab-library" class="nav-btn text-slate-300 hover:bg-slate-800 hover:text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-book-bookmark"></i> Biblioteca (${paperCount})
+                    </button>
+                    <button onclick="switchTab('matrix')" id="tab-matrix" class="nav-btn text-slate-300 hover:bg-slate-800 hover:text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-code-compare"></i> Matriz Comparativa
+                    </button>
+                    <button onclick="switchTab('master-protocol')" id="tab-master-protocol" class="nav-btn text-slate-300 hover:bg-slate-800 hover:text-white px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check"></i> Protocolo Master
+                    </button>
+                </nav>
+
+                <!-- Actions & Dark Mode Toggle -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="openModal('addPaperModal')" class="bg-brand-600 hover:bg-brand-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition shadow-md shadow-brand-600/20 flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Nuevo Paper</span>
+                    </button>
+                    <button onclick="toggleDarkMode()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg text-xs transition" title="Cambiar Tema">
+                        <i class="fa-solid fa-moon dark:hidden"></i>
+                        <i class="fa-solid fa-sun hidden dark:inline text-amber-400"></i>
+                    </button>
+                    <button onclick="exportProjectJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg text-xs transition" title="Exportar JSON">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                    <button onclick="importProjectJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg text-xs transition" title="Importar JSON">
+                        <i class="fa-solid fa-upload"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Bar -->
+        <div class="md:hidden flex overflow-x-auto border-t border-slate-800 px-2 py-1.5 gap-1 text-xs">
+            <button onclick="switchTab('dashboard')" class="text-slate-300 px-3 py-1 rounded whitespace-nowrap">Dashboard</button>
+            <button onclick="switchTab('library')" class="text-slate-300 px-3 py-1 rounded whitespace-nowrap">Biblioteca</button>
+            <button onclick="switchTab('matrix')" class="text-slate-300 px-3 py-1 rounded whitespace-nowrap">Matriz</button>
+            <button onclick="switchTab('master-protocol')" class="text-slate-300 px-3 py-1 rounded whitespace-nowrap">Master Protocol</button>
+        </div>
+    </header>
+
+    <!-- Notifications Area -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 no-print"></div>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- VIEW: DASHBOARD -->
+        <section id="view-dashboard" class="tab-view space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-brand-950 rounded-2xl p-6 text-white shadow-xl border border-slate-800 relative overflow-hidden">
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-block bg-brand-500/20 text-brand-300 border border-brand-500/30 text-xs px-2.5 py-0.5 rounded-full font-semibold mb-2">Homologación Metodológica</span>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Auna criterios heterogéneos y garantiza la reproducibilidad</h1>
+                    <p class="text-slate-300 text-xs sm:text-sm mb-5 leading-relaxed">
+                        Transforma formatos divergentes de literatura científica en un marco de variables unificado. Compara diseños experimentales, detecta sesgos y sintetiza protocolos maestros para ejecución en laboratorio.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="openModal('addPaperModal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow-lg shadow-brand-600/30 flex items-center gap-2">
+                            <i class="fa-solid fa-file-circle-plus"></i> Analizar Artículo
+                        </button>
+                        <button onclick="loadSampleDataset()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                            <i class="fa-solid fa-vial"></i> Cargar Datos de Ejemplo (3 Papers EGCG)
+                        </button>
+                    </div>
+                </div>
+                <i class="fa-solid fa-dna absolute -right-6 -bottom-8 opacity-10 text-[200px] text-brand-300 pointer-events-none"></i>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Papers Analizados</p>
+                        <h3 id="stat-total-papers" class="text-2xl font-bold text-slate-900 dark:text-white mt-1">0</h3>
+                        <p class="text-[11px] text-brand-600 dark:text-brand-400 font-medium">En base activa</p>
+                    </div>
+                    <div class="bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 p-3 rounded-xl text-xl">
+                        <i class="fa-solid fa-book-open text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Replicabilidad Promedio</p>
+                        <h3 id="stat-avg-score" class="text-2xl font-bold text-slate-900 dark:text-white mt-1">0%</h3>
+                        <p id="stat-score-badge" class="text-[11px] text-slate-500 font-medium">Sin datos</p>
+                    </div>
+                    <div class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-3 rounded-xl text-xl">
+                        <i class="fa-solid fa-square-check text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Variables Mapeadas</p>
+                        <h3 id="stat-total-vars" class="text-2xl font-bold text-slate-900 dark:text-white mt-1">0</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">Indep, Dep & Controles</p>
+                    </div>
+                    <div class="bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-3 rounded-xl text-xl">
+                        <i class="fa-solid fa-diagram-project text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Sujetos Total (N)</p>
+                        <h3 id="stat-total-sample" class="text-2xl font-bold text-slate-900 dark:text-white mt-1">0</h3>
+                        <p class="text-[11px] text-slate-500 font-medium">Muestra acumulada</p>
+                    </div>
+                    <div class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 p-3 rounded-xl text-xl">
+                        <i class="fa-solid fa-users text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Chart 1: Replicability Index -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Distribución de Replicabilidad</h3>
+                        <span class="text-[11px] text-slate-400">Rigor metodológico</span>
+                    </div>
+                    <div class="relative flex-grow flex items-center justify-center min-h-[220px]">
+                        <canvas id="chartReplicability"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Sample Size & Intervention Duration Bar Chart -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm lg:col-span-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Comparativa de Tamaño de Muestra (N) vs Score de Replicación</h3>
+                        <span class="text-[11px] text-slate-400">Por artículo</span>
+                    </div>
+                    <div class="relative min-h-[220px]">
+                        <canvas id="chartSampleComparison"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Recent Papers Grid -->
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Papers Recientes en Biblioteca</h3>
+                    <button onclick="switchTab('library')" class="text-xs text-brand-600 dark:text-brand-400 font-semibold hover:underline flex items-center gap-1">
+                        Ver todos <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div id="dashboard-recent-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Dynamic cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: LIBRARY -->
+        <section id="view-library" class="tab-view space-y-6 hidden">
+            <!-- Search & Filters Toolbar -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="relative w-full md:w-96">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    <input type="text" id="librarySearch" oninput="filterPapers()" placeholder="Buscar por título, autor, reactivo o modelo..." class="w-full pl-9 pr-4 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                    <select id="filterDesign" onchange="filterPapers()" class="border border-slate-300 dark:border-slate-600 dark:bg-slate-900 text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500">
+                        <option value="ALL">Todos los Diseños</option>
+                        <option value="In vitro">In vitro</option>
+                        <option value="In vivo">In vivo</option>
+                        <option value="Ensayos Clínicos">Ensayos Clínicos</option>
+                        <option value="Cuasi-experimental">Cuasi-experimental</option>
+                    </select>
+
+                    <select id="filterScore" onchange="filterPapers()" class="border border-slate-300 dark:border-slate-600 dark:bg-slate-900 text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500">
+                        <option value="ALL">Cualquier Replicabilidad</option>
+                        <option value="HIGH">Alta (>80%)</option>
+                        <option value="MEDIUM">Media (50-80%)</option>
+                        <option value="LOW">Baja (<50%)</option>
+                    </select>
+
+                    <button onclick="openModal('addPaperModal')" class="bg-brand-600 hover:bg-brand-500 text-white text-xs px-3 py-2 rounded-lg font-semibold transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Agregar Paper
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paper Cards Grid -->
+            <div id="library-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically filled -->
+            </div>
+        </section>
+
+        <!-- VIEW: MATRIX COMPARISON -->
+        <section id="view-matrix" class="tab-view space-y-6 hidden">
+            <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <!-- Header Controls -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Matriz Comparativa & Homologación de Criterios</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Contrasta los protocolos, aislando diferencias en dosis, modelos, reactivos y vacíos de replicación.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="matrix-selected-count" class="bg-brand-100 dark:bg-brand-900/50 text-brand-800 dark:text-brand-300 font-bold px-3 py-1 rounded-full text-xs">
+                            0 seleccionados
+                        </span>
+                        <button onclick="printReport()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5">
+                            <i class="fa-solid fa-print"></i> Exportar Informe / PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Paper Selection Bar -->
+                <div class="mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Selecciona artículos para comparar:</p>
+                    <div id="matrix-paper-checkboxes" class="flex flex-wrap gap-2">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="matrix-empty-state" class="text-center py-16 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                    <i class="fa-solid fa-code-compare text-4xl text-slate-300 dark:text-slate-600 mb-3"></i>
+                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">Selecciona al menos 2 papers</h3>
+                    <p class="text-xs text-slate-500 max-w-md mx-auto mt-1">Marca las casillas superiores para contrastar metodologías lado a lado, homologar terminología y sintetizar divergencias.</p>
+                </div>
+
+                <!-- Data Matrix Wrapper -->
+                <div id="matrix-data-wrapper" class="space-y-8 hidden">
+                    
+                    <!-- Synthesized Similarities & Differences -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-4">
+                            <h3 class="font-bold text-emerald-900 dark:text-emerald-300 text-xs sm:text-sm flex items-center gap-2 mb-3">
+                                <i class="fa-solid fa-circle-nodes text-emerald-600"></i> Convergencias & Semejanzas Metodológicas
+                            </h3>
+                            <ul id="matrix-similarities-list" class="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                                <!-- Dynamic -->
+                            </ul>
+                        </div>
+
+                        <div class="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4">
+                            <h3 class="font-bold text-amber-900 dark:text-amber-300 text-xs sm:text-sm flex items-center gap-2 mb-3">
+                                <i class="fa-solid fa-code-fork text-amber-600"></i> Divergencias & Diferencias de Protocolo
+                            </h3>
+                            <ul id="matrix-differences-list" class="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                                <!-- Dynamic -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Side-by-side Main Table -->
+                    <div class="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr id="matrix-header-row" class="bg-slate-900 text-white">
+                                    <th class="p-3 font-semibold border-b border-slate-800 min-w-[180px] sticky left-0 z-10 bg-slate-900">Dimensión / Criterio</th>
+                                    <!-- Dynamic Columns -->
+                                </tr>
+                            </thead>
+                            <tbody id="matrix-body-rows" class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Crosstab Matrix of Variables -->
+                    <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <h3 class="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-cubes text-brand-600"></i> Mapeo Cruzado de Variables & Controles
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-700">
+                                        <th class="p-2.5">Artículo</th>
+                                        <th class="p-2.5">Variables Independientes</th>
+                                        <th class="p-2.5">Variables Dependientes</th>
+                                        <th class="p-2.5">Variables Controladas</th>
+                                        <th class="p-2.5">Vacíos Metodológicos / Sesgos</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="crosstab-body" class="divide-y divide-slate-200 dark:divide-slate-700">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: MASTER REPLICATION PROTOCOL -->
+        <section id="view-master-protocol" class="tab-view space-y-6 hidden">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <!-- Top Toolbar -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generador de Protocolo Estándar de Replicación (Master Protocol)</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Sintetiza la mejor combinación de metodologías de los papers analizados en una guía de laboratorio ejecutable.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="synthesizeMasterProtocol()" class="bg-brand-600 hover:bg-brand-500 text-white text-xs px-3.5 py-2 rounded-lg font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Sintetizar
+                        </button>
+                        <button onclick="printMasterProtocol()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs px-3.5 py-2 rounded-lg font-semibold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf"></i> Imprimir / PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div id="master-protocol-container" class="space-y-6">
+                    <!-- Protocol Render Area -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: ADD / EDIT PAPER -->
+    <div id="addPaperModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto no-print">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto border border-slate-200 dark:border-slate-700">
+            <!-- Modal Header -->
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-microscope text-brand-400"></i>
+                    <h3 class="font-bold text-sm sm:text-base">Estandarizar e Ingressar Nuevo Paper</h3>
+                </div>
+                <button onclick="closeModal('addPaperModal')" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form Body -->
+            <form id="paperForm" onsubmit="handleSavePaper(event)" class="p-6 overflow-y-auto space-y-5 text-xs">
+                
+                <div class="bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800/50 rounded-xl p-3 flex justify-between items-center">
+                    <span class="text-brand-900 dark:text-brand-300 font-medium">¿Deseas probar rápidamente con un artículo de ejemplo?</span>
+                    <button type="button" onclick="fillFormWithSample()" class="bg-brand-600 hover:bg-brand-500 text-white text-[11px] px-3 py-1.5 rounded-lg font-semibold transition">
+                        Cargar Formulario
+                    </button>
+                </div>
+
+                <!-- Basic Metadata -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Título del Artículo *</label>
+                        <input type="text" id="formTitle" required class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Ej: Epigallocatechin Gallate Attenuates Hydrogen Peroxide-Induced Oxidative Stress...">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Diseño del Estudio *</label>
+                        <select id="formDesign" required class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="In vitro">In vitro (Cultivo Celular)</option>
+                            <option value="In vivo">In vivo (Modelos Animales)</option>
+                            <option value="Ensayos Clínicos">Ensayo Clínico Humano</option>
+                            <option value="Cuasi-experimental">Cuasi-experimental</option>
+                            <option value="Estudio de Cohorte">Estudio de Cohorte</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Autores *</label>
+                        <input type="text" id="formAuthors" required class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Ej: Zhang L., Wang H., et al.">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Año & Revista *</label>
+                        <input type="text" id="formYearJournal" required class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Ej: 2023, J. Agric. Food Chem.">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">DOI / Enlace</label>
+                        <input type="text" id="formDoi" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="10.1021/acs.jafc...">
+                    </div>
+                </div>
+
+                <!-- Abstract / Context -->
+                <div>
+                    <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Resumen / Enfoque Principal *</label>
+                    <textarea id="formAbstract" required rows="2" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Breve síntesis del objetivo y contexto del estudio..."></textarea>
+                </div>
+
+                <!-- Homologated Variables Section -->
+                <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px] flex items-center gap-1">
+                        <i class="fa-solid fa-diagram-project text-brand-600"></i> Homologación de Variables Experimentales
+                    </h4>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Sujetos / Muestra / Modelo (Con N total) *</label>
+                            <input type="text" id="formSample" required class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg px-3 py-2" placeholder="Ej: Células HepG2 (N=6 réplicas independientes por grupo)">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Tamaño Muestral Numérico N (Para Gráficos) *</label>
+                            <input type="number" id="formSampleN" required min="1" value="30" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg px-3 py-2">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Variables Independientes (Tratamientos/Dosis) *</label>
+                            <input type="text" id="formVarIndep" required class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg px-3 py-2" placeholder="Ej: EGCG (10, 25, 50 µM), H2O2 (500 µM por 2h)">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Variables Dependientes (Métricas/Ensayo) *</label>
+                            <input type="text" id="formVarDep" required class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg px-3 py-2" placeholder="Ej: Viabilidad celular (MTT), Niveles ROS (DCFH-DA), SOD">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Variables Controladas / Confusoras</label>
+                            <input type="text" id="formVarControl" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-800 rounded-lg px-3 py-2" placeholder="Ej: T° 37°C, 5% CO2, Tiempo de incubación pre-trata 24h">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment, Protocol, Stats -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Equipos, Reactivos & Materiales (Con marcas/especificaciones) *</label>
+                            <textarea id="formEquipment" required rows="3" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2" placeholder="Ej: EGCG Sigma-Aldrich (>98% pureza), Kit DCFH-DA Abcam, Lector de microplacas BioTek Synergy H1..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Análisis Estadístico Utilizado *</label>
+                            <textarea id="formStats" required rows="3" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2" placeholder="Ej: ANOVA de una vía seguido de prueba Tukey post-hoc. p < 0.05 considerado significativo. GraphPad Prism 9.0."></textarea>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Paso a Paso del Protocolo Experimental (Separa cada paso con salto de línea) *</label>
+                        <textarea id="formProcedure" required rows="4" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2" placeholder="Paso 1: Sembrar células HepG2 a una densidad de 1x10^4 células/pozo en placa de 96 pozos.&#10;Paso 2: Incubar por 24h a 37°C y 5% CO2.&#10;Paso 3: Pre-tratar con EGCG (10, 25, 50 µM) durante 12h.&#10;Paso 4: Inducir estrés oxidativo con H2O2 500 µM por 2h."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Score de Replicabilidad (0-100%) *</label>
+                            <input type="number" id="formReplicScore" required min="0" max="100" value="85" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Vacíos Metodológicos o Información Faltante Identificada</label>
+                            <input type="text" id="formGaps" class="w-full border border-slate-300 dark:border-slate-600 dark:bg-slate-900 rounded-lg px-3 py-2" placeholder="Ej: No se especifica el número de pasaje celular exacto ni el lote de suero fetal bovino.">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="closeModal('addPaperModal')" class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-semibold transition flex items-center gap-1.5 shadow-md shadow-brand-600/20">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar y Analizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PAPER DETAIL VIEWER -->
+    <div id="paperDetailModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto no-print">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto border border-slate-200 dark:border-slate-700">
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                <span id="detail-modal-badge" class="text-xs font-bold bg-brand-500 text-white px-2.5 py-0.5 rounded-full">In vitro</span>
+                <button onclick="closeModal('paperDetailModal')" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div id="detail-modal-body" class="p-6 overflow-y-auto space-y-6 text-xs">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let papers = [];
+        let selectedPaperIds = [];
+        let chartReplicabilityInstance = null;
+        let chartSampleInstance = null;
+
+        // Rich Pre-loaded Sample Dataset: 3 Articles on EGCG & Cellular Oxidative Stress
+        const sampleDataset = [
+            {
+                id: 'paper-egcg-1',
+                title: 'Epigallocatechin Gallate (EGCG) Attenuates Hydrogen Peroxide-Induced Oxidative Stress and Apoptosis in HepG2 Cells',
+                authors: 'Zhang L., Wang H., Liu X., Chen R.',
+                yearJournal: '2022, Journal of Agricultural and Food Chemistry',
+                doi: '10.1021/acs.jafc.2c01845',
+                design: 'In vitro',
+                abstract: 'Evaluación del efecto citoprotector del galato de epigalovectorina (EGCG) extraído de té verde contra la citotoxicidad inducida por H2O2 en células de hepatocarcinoma humano HepG2.',
+                sample: 'Células HepG2 humanas (N=6 réplicas independientes por tratamiento)',
+                sampleN: 36,
+                varIndep: 'EGCG (dosis: 10, 25, 50 µM); H2O2 (500 µM durante 2 horas)',
+                varDep: 'Viabilidad celular (% MTT), acumulación de ROS intracelular (DCFH-DA), actividad enzima SOD y Catalasa',
+                varControl: 'Temperatura 37°C, 5% CO2, tiempo de pre-incubación con EGCG de 12 horas',
+                equipment: 'EGCG Sigma-Aldrich (Puro >98%), Lector de microplacas BioTek Synergy H1, Ensayo DCFH-DA Abcam (ab113851), DMEM alto en glucosa (Gibco)',
+                stats: 'ANOVA de una vía seguido de test post-hoc de Tukey. Nivel de significancia p < 0.05. GraphPad Prism v9.0.',
+                procedure: "1. Sembrar células HepG2 a 1x10^4 células/pozo en placas de 96 pozos e incubar por 24h.\n2. Reemplazar medio por DMEM libre de suero conteniendo EGCG (0, 10, 25, 50 µM) por 12 horas.\n3. Lavar con PBS 1X e incubar con H2O2 500 µM durante 2 horas para inducir estrés oxidativo.\n4. Medir viabilidad con reactivo MTT (5 mg/mL) a 570 nm y ROS por fluorescencia DCFH-DA (Ex/Em: 485/535 nm).",
+                replicScore: 90,
+                gaps: 'No se reportó el número de pasaje exacto de la línea celular HepG2.'
+            },
+            {
+                id: 'paper-egcg-2',
+                title: 'Protective Mechanisms of Green Tea Polyphenols Against Oxidative Injury in C2C12 Myoblasts',
+                authors: 'Martínez-Gómez A., Patel K., Suzuki T.',
+                yearJournal: '2023, Free Radical Biology and Medicine',
+                doi: '10.1016/j.freeradbiomed.2023.04.012',
+                design: 'In vitro',
+                abstract: 'Estudio de la modulación de la vía Nrf2/HO-1 por parte del extracto de té verde estandarizado (50% EGCG) en mioblastos de ratón sometidos a peróxido de tert-butilo.',
+                sample: 'Mioblastos C2C12 de ratón (N=5 cultivos independientes por grupo)',
+                sampleN: 25,
+                varIndep: 'Extracto de Té Verde EGCG (5, 15, 30 µg/mL); t-BHP (200 µM por 4 horas)',
+                varDep: 'Expresión proteica Nrf2 y HO-1 (Western Blot), ensayo LDH supernatant, niveles de GSH',
+                varControl: 'Suero fetal bovino desactivado al 10%, confluencia celular al 80% al iniciar tratamiento',
+                equipment: 'Extracto estandarizado EGCG Sigma E4143, Sistema de Electroforesis Bio-Rad Mini-PROTEAN, Anticuerpos primarios anti-Nrf2 Cell Signaling (#12721)',
+                stats: 'Prueba t de Student para comparaciones pareadas y ANOVA de dos vías. p < 0.01. R Software v4.2.',
+                procedure: "1. Cultivar mioblastos C2C12 hasta alcanzar el 80% de confluencia.\n2. Pre-tratar con extracto de té verde (5, 15, 30 µg/mL) durante 6 horas.\n3. Aplicar estresor t-BHP (200 µM) por 4 horas adicionales.\n4. Lisis celular con buffer RIPA para Western Blot y recolección de sobrenadante para ensayo de liberación de LDH.",
+                replicScore: 82,
+                gaps: 'Se usó extracto crudo estandarizado en lugar de EGCG puro purificado, lo que genera variabilidad entre lotes.'
+            },
+            {
+                id: 'paper-egcg-3',
+                title: 'Oral Green Tea Extract Suppresses Systemic Oxidative Biomarkers in Wistar Rats Exposed to Heavy Metals',
+                authors: 'Silva R., Santos F., Andrade M.',
+                yearJournal: '2021, Chemosphere',
+                doi: '10.1016/j.chemosphere.2021.129801',
+                design: 'In vivo',
+                abstract: 'Evaluación in vivo de la suplementación oral con EGCG en ratas Wistar expuestas a acetato de plomo en el agua de bebida para mitigar la peroxidación lipídica hepática.',
+                sample: 'Ratas Wistar macho (N=40 ratas divididas en 4 grupos de 10)',
+                sampleN: 40,
+                varIndep: 'EGCG oral (50 mg/kg/día vs 100 mg/kg/día por sondaje gástrico por 28 días); Acetato de Plomo (100 ppm en agua)',
+                varDep: 'Niveles de Malondialdehído (MDA) en tejido hepático, ensayo TBARS, actividad de Glutatión Peroxidasa (GPx)',
+                varControl: 'Ciclo luz/oscuridad 12h/12h, T° 22±2°C, dieta estándar ad libitum',
+                equipment: 'EGCG grado oral comercial (PureBulk), Espectrofotómetro UV-Vis Shimadzu UV-1800, Homogeneizador de tejidos TissueLyser II',
+                stats: 'ANOVA de una vía con prueba post-hoc de Dunnett. p < 0.05. SPSS v26.0.',
+                procedure: "1. Aclimatación de ratas Wistar durante 7 días previa al estudio.\n2. División aleatoria en 4 grupos (Control, Plomo, Plomo+EGCG 50, Plomo+EGCG 100).\n3. Administración diaria de EGCG por gavage oral durante 28 días continuos.\n4. Eutanasia, extracción de hígado, homogeneización en buffer fosfato helado y medición de MDA por reacción con ácido tiobarbitúrico a 532 nm.",
+                replicScore: 75,
+                gaps: 'No se detallaron las características del agua de bebida de control ni la tasa exacta de consumo por animal.'
+            }
+        ];
+
+        // Init App On DOM Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('scireplicate_papers_v3');
+            if (saved) {
+                try { papers = JSON.parse(saved); } catch(e) { papers = [...sampleDataset]; }
+            } else {
+                papers = [...sampleDataset];
+            }
+
+            if (papers.length >= 2) {
+                selectedPaperIds = [papers[0].id, papers[1].id];
+            } else if (papers.length === 1) {
+                selectedPaperIds = [papers[0].id];
+            }
+
+            refreshUI();
+        });
+
+        function refreshUI() {
+            saveState();
+            renderDashboardStats();
+            renderDashboardRecent();
+            renderLibrary();
+            renderCharts();
+            renderMatrixSection();
+            synthesizeMasterProtocol();
+        }
+
+        function saveState() {
+            localStorage.setItem('scireplicate_papers_v3', JSON.stringify(papers));
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeView = document.getElementById(`view-${tabId}`);
+            if (activeView) activeView.classList.remove('hidden');
+
+            const activeTabBtn = document.getElementById(`tab-${tabId}`);
+            if (activeTabBtn) {
+                activeTabBtn.classList.add('bg-slate-800', 'text-white');
+                activeTabBtn.classList.remove('text-slate-300');
+            }
+
+            if (tabId === 'dashboard') renderCharts();
+            if (tabId === 'matrix') renderMatrixSection();
+            if (tabId === 'master-protocol') synthesizeMasterProtocol();
+        }
+
+        function loadSampleDataset() {
+            papers = [...sampleDataset];
+            selectedPaperIds = [papers[0].id, papers[1].id];
+            refreshUI();
+            showToast('3 Papers de ejemplo (EGCG & Estrés Oxidativo) cargados', 'success');
+        }
+
+        function renderDashboardStats() {
+            document.getElementById('stat-total-papers').textContent = papers.length;
+            
+            if (papers.length === 0) {
+                document.getElementById('stat-avg-score').textContent = '0%';
+                document.getElementById('stat-total-vars').textContent = '0';
+                document.getElementById('stat-total-sample').textContent = '0';
+                return;
+            }
+
+            const avgScore = Math.round(papers.reduce((sum, p) => sum + (p.replicScore || 0), 0) / papers.length);
+            document.getElementById('stat-avg-score').textContent = `${avgScore}%`;
+
+            const badge = document.getElementById('stat-score-badge');
+            if (avgScore >= 80) {
+                badge.textContent = 'Rigor Metodológico Alto';
+                badge.className = 'text-[11px] font-semibold text-emerald-600 dark:text-emerald-400';
+            } else if (avgScore >= 60) {
+                badge.textContent = 'Rigor Metodológico Medio';
+                badge.className = 'text-[11px] font-semibold text-amber-600 dark:text-amber-400';
+            } else {
+                badge.textContent = 'Riesgo de Reproducibilidad';
+                badge.className = 'text-[11px] font-semibold text-rose-600 dark:text-rose-400';
+            }
+
+            let totalVars = 0;
+            let totalSampleN = 0;
+            papers.forEach(p => {
+                const indep = (p.varIndep || '').split(';').filter(Boolean).length;
+                const dep = (p.varDep || '').split(',').filter(Boolean).length;
+                const ctrl = (p.varControl || '').split(',').filter(Boolean).length;
+                totalVars += (indep + dep + ctrl);
+                totalSampleN += Number(p.sampleN || 0);
+            });
+
+            document.getElementById('stat-total-vars').textContent = totalVars;
+            document.getElementById('stat-total-sample').textContent = totalSampleN;
+        }
+
+        function renderDashboardRecent() {
+            const container = document.getElementById('dashboard-recent-grid');
+            container.innerHTML = '';
+
+            const recent = [...papers].slice(0, 3);
+            if (recent.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 col-span-3 text-center py-6">No hay papers registrados.</p>`;
+                return;
+            }
+
+            recent.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col justify-between hover:shadow-md transition';
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-2">
+                            <span class="text-[10px] font-bold bg-brand-100 dark:bg-brand-900/50 text-brand-800 dark:text-brand-300 px-2 py-0.5 rounded">${escapeHtml(p.design)}</span>
+                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">${p.replicScore}% Score</span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 dark:text-white text-xs line-clamp-2 mb-1">${escapeHtml(p.title)}</h4>
+                        <p class="text-[11px] text-slate-500 mb-2">${escapeHtml(p.authors)} (${escapeHtml(p.yearJournal)})</p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs">
+                        <span class="text-slate-400">N = ${p.sampleN}</span>
+                        <button onclick="openPaperDetail('${p.id}')" class="text-brand-600 dark:text-brand-400 font-semibold hover:underline">
+                            Ver Detalle <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderCharts() {
+            if (papers.length === 0) return;
+
+            // Chart 1: Donut Replicability
+            const ctx1 = document.getElementById('chartReplicability').getContext('2d');
+            let high = 0, med = 0, low = 0;
+            papers.forEach(p => {
+                if (p.replicScore >= 80) high++;
+                else if (p.replicScore >= 50) med++;
+                else low++;
+            });
+
+            if (chartReplicabilityInstance) chartReplicabilityInstance.destroy();
+            chartReplicabilityInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Alta (>80%)', 'Media (50-80%)', 'Baja (<50%)'],
+                    datasets: [{
+                        data: [high, med, low],
+                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+                    cutout: '70%'
+                }
+            });
+
+            // Chart 2: Sample size N vs Replicability Bar Chart
+            const ctx2 = document.getElementById('chartSampleComparison').getContext('2d');
+            if (chartSampleInstance) chartSampleInstance.destroy();
+
+            const labels = papers.map(p => p.title.length > 25 ? p.title.substring(0, 25) + '...' : p.title);
+            const sampleNs = papers.map(p => p.sampleN || 0);
+            const scores = papers.map(p => p.replicScore || 0);
+
+            chartSampleInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Tamaño Muestra (N)',
+                            data: sampleNs,
+                            backgroundColor: '#0d9488',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Score Replicación (%)',
+                            data: scores,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        function renderLibrary() {
+            const grid = document.getElementById('library-grid');
+            grid.innerHTML = '';
+
+            const search = document.getElementById('librarySearch').value.toLowerCase();
+            const designFilter = document.getElementById('filterDesign').value;
+            const scoreFilter = document.getElementById('filterScore').value;
+
+            const filtered = papers.filter(p => {
+                const matchSearch = p.title.toLowerCase().includes(search) ||
+                                    p.authors.toLowerCase().includes(search) ||
+                                    p.equipment.toLowerCase().includes(search) ||
+                                    p.varIndep.toLowerCase().includes(search);
+                
+                const matchDesign = (designFilter === 'ALL') || (p.design === designFilter);
+
+                let matchScore = true;
+                if (scoreFilter === 'HIGH') matchScore = p.replicScore >= 80;
+                if (scoreFilter === 'MEDIUM') matchScore = p.replicScore >= 50 && p.replicScore < 80;
+                if (scoreFilter === 'LOW') matchScore = p.replicScore < 50;
+
+                return matchSearch && matchDesign && matchScore;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <i class="fa-solid fa-folder-open text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+                        <h4 class="font-bold text-slate-700 dark:text-slate-300 text-xs">No se encontraron artículos</h4>
+                        <p class="text-[11px] text-slate-500 mt-1">Prueba cambiando los criterios de búsqueda.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const isSelected = selectedPaperIds.includes(p.id);
+                const card = document.createElement('div');
+                card.className = `bg-white dark:bg-slate-800 border ${isSelected ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200 dark:border-slate-700'} rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-3">
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-0.5 rounded">${escapeHtml(p.design)}</span>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full ${p.replicScore >= 80 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300'}">
+                                ${p.replicScore}% Replicable
+                            </span>
+                        </div>
+
+                        <h3 class="font-bold text-slate-900 dark:text-white text-sm mb-1 leading-snug line-clamp-2">${escapeHtml(p.title)}</h3>
+                        <p class="text-[11px] text-slate-500 mb-3"><i class="fa-solid fa-users text-slate-400 mr-1"></i>${escapeHtml(p.authors)} &bull; ${escapeHtml(p.yearJournal)}</p>
+
+                        <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 mb-4 bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                            ${escapeHtml(p.abstract)}
+                        </p>
+
+                        <div class="space-y-1.5 mb-4 text-[11px]">
+                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                                <i class="fa-solid fa-vial text-brand-600 w-4"></i>
+                                <span class="font-bold">Muestra:</span>
+                                <span class="truncate text-slate-500">${escapeHtml(p.sample)}</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                                <i class="fa-solid fa-vials text-brand-600 w-4"></i>
+                                <span class="font-bold">Independientes:</span>
+                                <span class="truncate text-slate-500">${escapeHtml(p.varIndep)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+                        <label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+                            <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelectPaper('${p.id}')" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                            <span>Comparar</span>
+                        </label>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="openPaperDetail('${p.id}')" class="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded-lg font-semibold transition">
+                                <i class="fa-solid fa-eye mr-1"></i> Detalle
+                            </button>
+                            <button onclick="deletePaper('${p.id}')" class="text-xs text-rose-500 hover:text-rose-700 p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/30 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterPapers() { renderLibrary(); }
+
+        function toggleSelectPaper(id) {
+            const idx = selectedPaperIds.indexOf(id);
+            if (idx > -1) selectedPaperIds.splice(idx, 1);
+            else selectedPaperIds.push(id);
+            refreshUI();
+        }
+
+        function renderMatrixSection() {
+            const checkboxContainer = document.getElementById('matrix-paper-checkboxes');
+            checkboxContainer.innerHTML = '';
+
+            papers.forEach(p => {
+                const checked = selectedPaperIds.includes(p.id);
+                const label = document.createElement('label');
+                label.className = `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs cursor-pointer transition select-none ${checked ? 'bg-brand-50 border-brand-300 text-brand-900 dark:bg-brand-950/40 dark:border-brand-700 dark:text-brand-300 font-semibold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`;
+                label.innerHTML = `
+                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSelectPaper('${p.id}')" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+                    <span class="truncate max-w-[200px]">${escapeHtml(p.title)}</span>
+                `;
+                checkboxContainer.appendChild(label);
+            });
+
+            document.getElementById('matrix-selected-count').textContent = `${selectedPaperIds.length} seleccionados`;
+
+            const emptyState = document.getElementById('matrix-empty-state');
+            const dataWrapper = document.getElementById('matrix-data-wrapper');
+
+            if (selectedPaperIds.length < 2) {
+                emptyState.classList.remove('hidden');
+                dataWrapper.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            dataWrapper.classList.remove('hidden');
+
+            const selected = papers.filter(p => selectedPaperIds.includes(p.id));
+
+            // Synthesize similarities & differences
+            synthesizeMatrixInsights(selected);
+
+            // Render Master Comparison Table
+            renderMatrixTable(selected);
+
+            // Render Crosstab Variables
+            renderCrosstabVariables(selected);
+        }
+
+        function synthesizeMatrixInsights(selected) {
+            const simList = document.getElementById('matrix-similarities-list');
+            const diffList = document.getElementById('matrix-differences-list');
+            simList.innerHTML = '';
+            diffList.innerHTML = '';
+
+            // Automated Convergence Rules
+            const designs = [...new Set(selected.map(p => p.design))];
+            const avgScore = Math.round(selected.reduce((a, b) => a + b.replicScore, 0) / selected.length);
+
+            const simPoints = [];
+            if (designs.length === 1) {
+                simPoints.push(`Homogeneidad de Diseño: Todos los artículos analizados emplean un enfoque <strong>${designs[0]}</strong>.`);
+            } else {
+                simPoints.push(`Enfoque complementario multimodelo que abarca diseños de tipo (${designs.join(', ')}).`);
+            }
+            simPoints.push(`Promedio general de rigor y replicabilidad experimental del grupo: <strong>${avgScore}%</strong>.`);
+            simPoints.push(`Coincidencia en la cuantificación de métricas de estrés oxidativo y respuesta protectora celular.`);
+
+            simPoints.forEach(pt => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start gap-2';
+                li.innerHTML = `<i class="fa-solid fa-check text-emerald-600 mt-0.5 flex-shrink-0"></i> <span>${pt}</span>`;
+                simList.appendChild(li);
+            });
+
+            // Automated Divergence Rules
+            const diffPoints = [];
+            const doses = selected.map(p => `"${p.title.substring(0, 15)}...": ${p.varIndep}`);
+            diffPoints.push(`<strong>Variabilidad de Dosis e Intervención:</strong> Difiere la ventana de concentraciones y tiempos de exposición. (${doses.join(' | ')})`);
+
+            const samples = selected.map(p => `N=${p.sampleN} (${p.design})`);
+            diffPoints.push(`<strong>Potencia de la Muestra (N):</strong> Diferencias significativas en el tamaño muestral acumulado. (${samples.join(', ')})`);
+
+            const gaps = selected.filter(p => p.gaps && p.gaps.trim().length > 0);
+            if (gaps.length > 0) {
+                diffPoints.push(`<strong>Vacíos Metodológicos:</strong> Se detectaron omitidos relevantes en ${gaps.length} de los artículos seleccionados.`);
+            }
+
+            diffPoints.forEach(pt => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start gap-2';
+                li.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5 flex-shrink-0"></i> <span>${pt}</span>`;
+                diffList.appendChild(li);
+            });
+        }
+
+        function renderMatrixTable(selected) {
+            const headerRow = document.getElementById('matrix-header-row');
+            const body = document.getElementById('matrix-body-rows');
+
+            headerRow.innerHTML = `<th class="p-3 font-semibold border-b border-slate-800 min-w-[180px] sticky left-0 z-10 bg-slate-900">Dimensión / Criterio</th>`;
+            body.innerHTML = '';
+
+            selected.forEach(p => {
+                const th = document.createElement('th');
+                th.className = 'p-3 font-semibold border-b border-slate-800 min-w-[220px] max-w-[280px] text-xs';
+                th.innerHTML = `
+                    <div class="font-bold text-white line-clamp-1">${escapeHtml(p.title)}</div>
+                    <div class="text-[10px] text-brand-300 font-normal">${escapeHtml(p.authors)} (${escapeHtml(p.yearJournal)})</div>
+                `;
+                headerRow.appendChild(th);
+            });
+
+            const dimensions = [
+                { key: 'design', label: 'Diseño del Estudio' },
+                { key: 'sample', label: 'Muestra / Modelo (N)' },
+                { key: 'varIndep', label: 'Var. Independientes (Dosis)' },
+                { key: 'varDep', label: 'Var. Dependientes (Ensayos)' },
+                { key: 'varControl', label: 'Var. Controladas' },
+                { key: 'equipment', label: 'Equipos & Reactivos Clave' },
+                { key: 'stats', label: 'Análisis Estadístico' },
+                { key: 'replicScore', label: 'Score Replicabilidad', badge: true },
+                { key: 'gaps', label: 'Vacíos Identificados' }
+            ];
+
+            dimensions.forEach(dim => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/50 transition';
+
+                const tdLabel = document.createElement('td');
+                tdLabel.className = 'p-3 font-bold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/80 sticky left-0 z-10';
+                tdLabel.textContent = dim.label;
+                tr.appendChild(tdLabel);
+
+                selected.forEach(p => {
+                    const td = document.createElement('td');
+                    td.className = 'p-3 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 align-top';
+
+                    let val = p[dim.key] || 'No especificado';
+                    if (dim.badge) {
+                        const score = Number(val);
+                        td.innerHTML = `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${score >= 80 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300'}">${score}% Replicable</span>`;
+                    } else {
+                        td.textContent = val;
+                    }
+                    tr.appendChild(td);
+                });
+
+                body.appendChild(tr);
+            });
+        }
+
+        function renderCrosstabVariables(selected) {
+            const body = document.getElementById('crosstab-body');
+            body.innerHTML = '';
+
+            selected.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-700/50 transition';
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700 max-w-[160px]">
+                        ${escapeHtml(p.title)}
+                        <span class="block text-[10px] text-brand-600 dark:text-brand-400 font-normal">${escapeHtml(p.design)}</span>
+                    </td>
+                    <td class="p-3 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-brand-50/20 dark:bg-brand-950/10">
+                        ${escapeHtml(p.varIndep)}
+                    </td>
+                    <td class="p-3 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-emerald-50/20 dark:bg-emerald-950/10">
+                        ${escapeHtml(p.varDep)}
+                    </td>
+                    <td class="p-3 border-r border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                        ${escapeHtml(p.varControl || 'N/A')}
+                    </td>
+                    <td class="p-3 text-slate-700 dark:text-slate-300 bg-amber-50/20 dark:bg-amber-950/10">
+                        ${escapeHtml(p.gaps || 'Ningún vacío detectado')}
+                    </td>
+                `;
+
+                body.appendChild(tr);
+            });
+        }
+
+        function synthesizeMasterProtocol() {
+            const container = document.getElementById('master-protocol-container');
+            if (!container) return;
+
+            if (papers.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-8">Carga al menos un paper para generar el protocolo maestro.</p>`;
+                return;
+            }
+
+            const targetPapers = selectedPaperIds.length >= 1 ? papers.filter(p => selectedPaperIds.includes(p.id)) : papers;
+
+            // Merge all equipment, procedures, and controls into a consolidated standard
+            const allEquipment = targetPapers.map(p => p.equipment).join('; ');
+            const allControls = targetPapers.map(p => p.varControl).filter(Boolean).join(' | ');
+            const allStats = targetPapers.map(p => p.stats).join(' | ');
+
+            // Collect all step procedures
+            let consolidatedSteps = [];
+            targetPapers.forEach(p => {
+                const steps = (p.procedure || '').split('\n').filter(s => s.trim().length > 0);
+                consolidatedSteps = consolidatedSteps.concat(steps);
+            });
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Protocol Header Card -->
+                    <div class="bg-slate-900 text-white p-5 rounded-xl border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <span class="text-[10px] bg-brand-500 text-white font-bold px-2.5 py-0.5 rounded uppercase tracking-wider">Protocolo Master Consolidado</span>
+                            <h3 class="text-base font-bold mt-1">SÍNTESIS DE REPLICACIÓN EXPERIMENTAL STANDARDIZADA</h3>
+                            <p class="text-xs text-slate-300 mt-0.5">Basado en la integración de ${targetPapers.length} artículos científicos de la colección active.</p>
+                        </div>
+                        <button onclick="copyMasterProtocolText()" class="bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center gap-1.5 flex-shrink-0">
+                            <i class="fa-solid fa-copy"></i> Copiar Protocolo Texto
+                        </button>
+                    </div>
+
+                    <!-- Consolidated Reagents & Controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-boxes-packing text-brand-600"></i> Lista Consolidada de Reactivos & Equipamiento
+                            </h4>
+                            <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHtml(allEquipment)}</p>
+                        </div>
+
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-sliders text-brand-600"></i> Condiciones de Control Estandarizadas
+                            </h4>
+                            <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHtml(allControls || 'Mantener temperatura, pH y atmósfera de incubación estandarizadas.')}</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Master Checklist -->
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-brand-600"></i> Checklist Secuencial de Replicación de Laboratorio
+                            </h4>
+                            <span class="text-[11px] text-slate-400">Marca las etapas completadas</span>
+                        </div>
+
+                        <div class="space-y-2.5">
+                            ${consolidatedSteps.map((step, idx) => `
+                                <div class="flex items-start gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-slate-50 transition text-xs">
+                                    <input type="checkbox" id="master-step-${idx}" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500 h-4 w-4">
+                                    <label for="master-step-${idx}" class="text-slate-800 dark:text-slate-200 leading-relaxed cursor-pointer select-none">
+                                        ${escapeHtml(step)}
+                                    </label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Statistical Plan -->
+                    <div class="bg-brand-50/50 dark:bg-brand-950/20 border border-brand-200 dark:border-brand-800/40 rounded-xl p-4 text-xs">
+                        <h4 class="font-bold text-brand-950 dark:text-brand-300 uppercase tracking-wider text-[11px] mb-1">
+                            <i class="fa-solid fa-calculator text-brand-600 mr-1"></i> Plan de Análisis Estadístico Sugerido
+                        </h4>
+                        <p class="text-slate-700 dark:text-slate-300">${escapeHtml(allStats)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openPaperDetail(id) {
+            const paper = papers.find(p => p.id === id);
+            if (!paper) return;
+
+            document.getElementById('detail-modal-badge').textContent = paper.design;
+            const body = document.getElementById('detail-modal-body');
+
+            body.innerHTML = `
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-1">${escapeHtml(paper.title)}</h2>
+                    <p class="text-[11px] text-slate-500"><i class="fa-solid fa-users mr-1"></i>${escapeHtml(paper.authors)} &bull; ${escapeHtml(paper.yearJournal)} ${paper.doi ? `&bull; DOI: ${escapeHtml(paper.doi)}` : ''}</p>
+                </div>
+
+                <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[10px]">Resumen / Enfoque</h4>
+                    <p class="text-slate-700 dark:text-slate-300 leading-relaxed">${escapeHtml(paper.abstract)}</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="border border-slate-200 dark:border-slate-700 p-3 rounded-xl bg-slate-50/30">
+                        <strong class="text-brand-600 block mb-1">Muestra (N=${paper.sampleN}):</strong>
+                        <p class="text-slate-700 dark:text-slate-300">${escapeHtml(paper.sample)}</p>
+                    </div>
+                    <div class="border border-slate-200 dark:border-slate-700 p-3 rounded-xl bg-slate-50/30">
+                        <strong class="text-brand-600 block mb-1">Var. Independientes:</strong>
+                        <p class="text-slate-700 dark:text-slate-300">${escapeHtml(paper.varIndep)}</p>
+                    </div>
+                    <div class="border border-slate-200 dark:border-slate-700 p-3 rounded-xl bg-slate-50/30">
+                        <strong class="text-brand-600 block mb-1">Var. Dependientes:</strong>
+                        <p class="text-slate-700 dark:text-slate-300">${escapeHtml(paper.varDep)}</p>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 dark:border-slate-700 p-4 rounded-xl space-y-2">
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider text-[10px]">Paso a Paso del Protocolo</h4>
+                    <pre class="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800">${escapeHtml(paper.procedure)}</pre>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border border-slate-200 dark:border-slate-700 p-3 rounded-xl">
+                        <strong class="text-slate-800 dark:text-slate-200 block mb-1">Equipos & Reactivos:</strong>
+                        <p class="text-slate-600 dark:text-slate-400">${escapeHtml(paper.equipment)}</p>
+                    </div>
+                    <div class="border border-slate-200 dark:border-slate-700 p-3 rounded-xl">
+                        <strong class="text-slate-800 dark:text-slate-200 block mb-1">Análisis Estadístico:</strong>
+                        <p class="text-slate-600 dark:text-slate-400">${escapeHtml(paper.stats)}</p>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 p-3 rounded-xl">
+                    <strong class="text-amber-900 dark:text-amber-300 block mb-1">Vacíos / Información Faltante:</strong>
+                    <p class="text-slate-700 dark:text-slate-300">${escapeHtml(paper.gaps || 'Ningún vacío crítico detectado.')}</p>
+                </div>
+            `;
+
+            openModal('paperDetailModal');
+        }
+
+        function handleSavePaper(event) {
+            event.preventDefault();
+
+            const newPaper = {
+                id: 'paper-' + Date.now(),
+                title: document.getElementById('formTitle').value,
+                design: document.getElementById('formDesign').value,
+                authors: document.getElementById('formAuthors').value,
+                yearJournal: document.getElementById('formYearJournal').value,
+                doi: document.getElementById('formDoi').value,
+                abstract: document.getElementById('formAbstract').value,
+                sample: document.getElementById('formSample').value,
+                sampleN: parseInt(document.getElementById('formSampleN').value) || 20,
+                varIndep: document.getElementById('formVarIndep').value,
+                varDep: document.getElementById('formVarDep').value,
+                varControl: document.getElementById('formVarControl').value,
+                equipment: document.getElementById('formEquipment').value,
+                stats: document.getElementById('formStats').value,
+                procedure: document.getElementById('formProcedure').value,
+                replicScore: parseInt(document.getElementById('formReplicScore').value) || 80,
+                gaps: document.getElementById('formGaps').value
+            };
+
+            papers.unshift(newPaper);
+            closeModal('addPaperModal');
+            document.getElementById('paperForm').reset();
+            refreshUI();
+            showToast('Artículo estandarizado e incorporado a la colección', 'success');
+        }
+
+        function fillFormWithSample() {
+            document.getElementById('formTitle').value = 'Synergistic Antioxidant Effect of Green Tea Polyphenols and Vitamin C in Human Skin Fibroblasts';
+            document.getElementById('formDesign').value = 'In vitro';
+            document.getElementById('formAuthors').value = 'Kim S., Park J., Lee H.';
+            document.getElementById('formYearJournal').value = '2024, Phytomedicine';
+            document.getElementById('formDoi').value = '10.1016/j.phymed.2024.155201';
+            document.getElementById('formAbstract').value = 'Demostración de la sinergia antioxidante entre EGCG y Ácido Ascórbico contra el daño oxidativo inducido por luz UV-A en fibroblastos primarios de piel humana.';
+            document.getElementById('formSample').value = 'Fibroblastos primarios HDFa (N=4 réplicas por grupo)';
+            document.getElementById('formSampleN').value = 24;
+            document.getElementById('formVarIndep').value = 'EGCG (20 µM), Vitamina C (50 µM), Radiación UV-A (10 J/cm2)';
+            document.getElementById('formVarDep').value = 'Niveles de peroxidación lipídica, Expresión de Metaloproteinasa MMP-1';
+            document.getElementById('formVarControl').value = 'Temperatura 37°C, Tampón PBS pH 7.4 durante irradiación';
+            document.getElementById('formEquipment').value = 'Lámpara irradiadora UV-A Vilber Lourmat, Kit TBARS, Anticuerpo MMP-1 Abcam';
+            document.getElementById('formStats').value = 'ANOVA de dos vías con test Bonferroni post-hoc. p < 0.01. GraphPad Prism 9.5.';
+            document.getElementById('formProcedure').value = "Paso 1: Irradiar fibroblastos HDFa con radiación UV-A (10 J/cm2).\nPaso 2: Incubar inmediatamente con mezcla EGCG (20 µM) + Vitamina C (50 µM) por 18 horas.\nPaso 3: Realizar ensayo TBARS para medir MDA y cuantificar MMP-1 por ELISA.";
+            document.getElementById('formReplicScore').value = 88;
+            document.getElementById('formGaps').value = 'Se requiere controlar la fotosensibilidad del compuesto en el medio de cultivo.';
+        }
+
+        function deletePaper(id) {
+            if (confirm('¿Eliminar este paper de la base de datos local?')) {
+                papers = papers.filter(p => p.id !== id);
+                selectedPaperIds = selectedPaperIds.filter(i => i !== id);
+                refreshUI();
+                showToast('Paper eliminado de la base activa', 'info');
+            }
+        }
+
+        function exportProjectJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(papers, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `SciReplicate_Proyecto_${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('Proyecto exportado en JSON', 'success');
+        }
+
+        function importProjectJSON() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (Array.isArray(imported)) {
+                            papers = imported;
+                            if (papers.length >= 2) selectedPaperIds = [papers[0].id, papers[1].id];
+                            refreshUI();
+                            showToast('Proyecto cargado exitosamente', 'success');
+                        }
+                    } catch(err) {
+                        showToast('Error al importar archivo JSON', 'warning');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function printMasterProtocol() {
+            switchTab('master-protocol');
+            setTimeout(() => window.print(), 200);
+        }
+
+        function copyMasterProtocolText() {
+            const targetPapers = selectedPaperIds.length >= 1 ? papers.filter(p => selectedPaperIds.includes(p.id)) : papers;
+            let steps = [];
+            targetPapers.forEach(p => {
+                steps = steps.concat((p.procedure || '').split('\n').filter(Boolean));
+            });
+
+            const text = `
+=====================================================
+SciReplicate - PROTOCOLO MASTER REPLICACIÓN CIENTÍFICA
+=====================================================
+ARTÍCULOS SINTETIZADOS: ${targetPapers.length}
+SCORE MEDIO REPLICABILIDAD: ${Math.round(targetPapers.reduce((a,b)=>a+b.replicScore,0)/targetPapers.length)}%
+
+EQUIPAMIENTO & REACTIVOS CONSOLIDADOS:
+${targetPapers.map(p => p.equipment).join('\n')}
+
+CHECKLIST PASO A PASO:
+${steps.map((s, idx) => `${idx + 1}. ${s}`).join('\n')}
+
+CONDICIONES DE CONTROL:
+${targetPapers.map(p => p.varControl).join(' | ')}
+=====================================================
+            `.trim();
+
+            copyToClipboard(text);
+            showToast('Protocolo Master copiado al portapapeles', 'success');
+        }
+
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bg = type === 'success' ? 'bg-emerald-800 text-white' : (type === 'warning' ? 'bg-amber-800 text-white' : 'bg-slate-900 text-white');
+            const icon = type === 'success' ? 'fa-circle-check' : (type === 'warning' ? 'fa-triangle-exclamation' : 'fa-info-circle');
+
+            toast.className = `${bg} px-3.5 py-2.5 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 transform transition duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${escapeHtml(msg)}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
